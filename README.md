@@ -8,5 +8,5 @@
 - Building Synchronous messaging between services (HTTP & gRPC)
 - Building Asynchronous messaging between services using an Azure Service (ServiceBus)
 
-##Course 
+## Course 
 https://www.youtube.com/watch?v=DgVjEo3OGBI
