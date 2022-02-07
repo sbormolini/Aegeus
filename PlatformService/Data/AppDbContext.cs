@@ -12,4 +12,12 @@ public class AppDbContext : DbContext
 
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Platform>()
+                    .HasNoDiscriminator()
+                    .ToContainer(nameof(Platforms))
+                    .HasPartitionKey(da => da.Id)
+                    .HasKey(da => new { da.Id });
+    }
 }

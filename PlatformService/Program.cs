@@ -1,15 +1,19 @@
+using Microsoft.EntityFrameworkCore;
 using PlatformService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// add cosmos
+var accountEndpoint = builder.Configuration.GetValue<string>("CosmosDb:Account");
+var accountKey = builder.Configuration.GetValue<string>("CosmosDb:Key");
+var dbName = builder.Configuration.GetValue<string>("CosmosDb:DatabaseName");
+builder.Services.AddDbContext<AppDbContext>(x => x.UseCosmos(accountEndpoint, accountKey, dbName));
 
+// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase);
 
 var app = builder.Build();
 
