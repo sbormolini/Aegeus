@@ -1,38 +1,117 @@
-﻿using PlatformService.Models;
+﻿using Microsoft.Azure.Cosmos;
+using PlatformService.Exceptions;
+using PlatformService.Models;
+using System.Net;
 
 namespace PlatformService.Data
 {
-    public class PlatformRepository : IPlatformRepository
+    public class PlatformRepository
     {
-        //private readonly AppDbContext _context;
+        private readonly Container _container;
+        private readonly CosmosClient _client;
 
-        //public PlatformRepository(AppDbContext context) => _context = context;
+        //public abstract string CollectionName { get; }
+        //public virtual string GenerateId(T entity) => Guid.NewGuid().ToString();
+        //public virtual PartitionKey ResolvePartitionKey(string entityId) => null;
 
-        //public void CreatePlatform(Platform platform) => _context.Platforms.Add(platform);
-
-        //public IEnumerable<Platform> GetAllPlatforms() => _context.Platforms.ToList();
-
-        //public Platform GetPlatformById(string id) => _context.Platforms.FirstOrDefault(p => p.Id == id);
-
-        //public bool SaveChanges() => _context.SaveChanges() >= 0;
-        public void CreatePlatform(Platform platform)
+        public PlatformRepository(CosmosClient client)
         {
-            throw new NotImplementedException();
+            _client = client;
         }
 
-        public IEnumerable<Platform> GetAllPlatforms()
+        public PlatformRepository(CosmosClient client, string databaseName, string containerName)
         {
-            throw new NotImplementedException();
+            _client = client;
+            _container = client.GetContainer(databaseName, containerName);
         }
 
-        public Platform GetPlatformById(string id)
+        public async Task<Platform> GetItemByIdAsync(string id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var result = await QueryItemAsync($"SELECT * FROM c WHERE c.id = '{id}'");
+                return result.FirstOrDefault();
+            }
+            catch (CosmosException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.NotFound)
+                    throw new EntityNotFoundException();
+
+                throw;
+            }
         }
 
-        public bool SaveChanges()
+        public async Task<IEnumerable<Platform>> QueryItemAsync(string query)
         {
-            throw new NotImplementedException();
+            try
+            {
+                QueryDefinition queryDefinition = new QueryDefinition(query);
+                FeedIterator<Platform> queryResultSetIterator = _container.GetItemQueryIterator<Platform>(queryDefinition);
+
+                List<Platform> platforms = new();
+                while (queryResultSetIterator.HasMoreResults)
+                {
+                    FeedResponse<Platform> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                    foreach (Platform paltform in currentResultSet)
+                    {
+                        platforms.Add(paltform);
+                        //Console.WriteLine("\tRead {0}\n", paltform);
+                    }
+                }
+
+                return platforms;
+            }
+            catch (CosmosException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.NotFound)
+                    throw new EntityNotFoundException();
+
+                throw;
+            }
+        }
+
+        public async Task AddItemsToContainerAsync(Platform platform)
+        {
+            try
+            {
+                // Read the item to see if it exists.  
+                ItemResponse<Platform> platformResponse = await _container.ReadItemAsync<Platform>(platform.Id, new PartitionKey(platform.Id));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                // Create an item in the container representing
+                ItemResponse<Platform> platformResponse = await _container.CreateItemAsync<Platform>(platform, new PartitionKey(platform.Id));
+            }
+        }
+
+        public async Task UpdateItemAsync(Platform platform)
+        {
+            try
+            {
+                await _container.ReplaceItemAsync(platform, platform.Id);
+            }
+            catch (CosmosException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.NotFound)
+                    throw new EntityNotFoundException();
+
+                throw;
+            }
+        }
+
+        public async Task DeleteItemAsync(Platform platform)
+        {
+            try
+            {
+                await _container.DeleteItemAsync<Platform>(platform.Id, new PartitionKey(platform.Id));
+            }
+            catch (CosmosException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.NotFound)
+                    throw new EntityNotFoundException();
+
+                throw;
+            }
         }
     }
 }
