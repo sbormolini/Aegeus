@@ -5,7 +5,7 @@ using System.Net;
 
 namespace PlatformService.Data
 {
-    public class PlatformRepository
+    public class PlatformRepository : IPlatformRepository
     {
         private readonly Container _container;
         private readonly CosmosClient _client;

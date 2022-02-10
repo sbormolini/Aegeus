@@ -1,16 +1,13 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using PlatformService.Models;
 
 namespace PlatformService.Data
 {
     public interface IPlatformRepository
     {
-        string CollectionName { get; }
-
-        Task<T> AddAsync(T entity);
-        Task DeleteAsync(T entity);
-        string GenerateId(T entity);
-        Task<T> GetByIdAsync(string id);
-        PartitionKey ResolvePartitionKey(string entityId);
-        Task UpdateAsync(T entity);
+        Task AddItemsToContainerAsync(Platform platform);
+        Task DeleteItemAsync(Platform platform);
+        Task<Platform> GetItemByIdAsync(string id);
+        Task<IEnumerable<Platform>> QueryItemAsync(string query);
+        Task UpdateItemAsync(Platform platform);
     }
 }

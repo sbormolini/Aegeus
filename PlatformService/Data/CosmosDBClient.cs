@@ -18,34 +18,34 @@ public class CosmosDBClient
         _client = client;
     }
 
-    public async Task<ContainerResponse> CreateContainerAsync(
-        string containerId, 
-        string partitionKeyPath,
-        int? throughput,
-        RequestOptions? requestOptions = null,
-        CancellationToken cancellationToken = default)
-    {
-        // Create a new container
-        var response = await _database.CreateContainerIfNotExistsAsync(containerId, partitionKeyPath, throughput, requestOptions, cancellationToken);
-        if (response is null)
-            throw new InvalidOperationException($"Response is null {nameof(response)}");
+    //public async Task<ContainerResponse> CreateContainerAsync(
+    //    string containerId, 
+    //    string partitionKeyPath,
+    //    int? throughput,
+    //    RequestOptions? requestOptions = null,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    // Create a new container
+    //    var response = await _database.CreateContainerIfNotExistsAsync(containerId, partitionKeyPath, throughput, requestOptions, cancellationToken);
+    //    if (response is null)
+    //        throw new InvalidOperationException($"Response is null {nameof(response)}");
         
-        return response;
-    }
+    //    return response;
+    //}
 
-    public async Task AddItemsToContainerAsync()
-    {
-        throw new NotImplementedException();
-    }
+    //public async Task AddItemsToContainerAsync()
+    //{
+    //    throw new NotImplementedException();
+    //}
 
-    public async Task RemoveItemsFromContainerAsync()
-    {
-        throw new NotImplementedException();
-    }
+    //public async Task RemoveItemsFromContainerAsync()
+    //{
+    //    throw new NotImplementedException();
+    //}
 
-    public async Task<ItemResponse> QueryItemsAsync<T>(string sqlQueryText)
-    {
-        QueryDefinition queryDefinition = new (sqlQueryText);
-        var items = await _container.GetItem
-    }
+    //public async Task<ItemResponse> QueryItemsAsync<T>(string sqlQueryText)
+    //{
+    //    QueryDefinition queryDefinition = new (sqlQueryText);
+    //    var items = await _container.GetItem
+    //}
 }
