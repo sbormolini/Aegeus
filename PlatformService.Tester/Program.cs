@@ -6,7 +6,7 @@ using PlatformService.Models;
 Console.WriteLine("Test cosmos sdk v3!");
 
 var endpoint = "<uri>";
-var key = "<ke>";
+var key = "<key>";
 
 CosmosClientBuilder cosmosClientBuilder = new CosmosClientBuilder(accountEndpoint: endpoint, authKeyOrResourceToken: key);
     //.WithConsistencyLevel(ConsistencyLevel.Session)
