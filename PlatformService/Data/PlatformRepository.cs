@@ -10,13 +10,10 @@ namespace PlatformService.Data
         private readonly Container _container;
         private readonly CosmosClient _client;
 
-        //public abstract string CollectionName { get; }
-        //public virtual string GenerateId(T entity) => Guid.NewGuid().ToString();
-        //public virtual PartitionKey ResolvePartitionKey(string entityId) => null;
-
         public PlatformRepository(CosmosClient client)
         {
             _client = client;
+            _container = client.GetContainer("astraeus-dev", "platforms");
         }
 
         public PlatformRepository(CosmosClient client, string databaseName, string containerName)
@@ -25,7 +22,7 @@ namespace PlatformService.Data
             _container = client.GetContainer(databaseName, containerName);
         }
 
-        public async Task<Platform> GetItemByIdAsync(string id)
+        public async Task<Platform?> GetItemByIdAsync(string id)
         {
             try
             {
@@ -53,10 +50,7 @@ namespace PlatformService.Data
                 {
                     FeedResponse<Platform> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                     foreach (Platform paltform in currentResultSet)
-                    {
                         platforms.Add(paltform);
-                        //Console.WriteLine("\tRead {0}\n", paltform);
-                    }
                 }
 
                 return platforms;
@@ -74,13 +68,15 @@ namespace PlatformService.Data
         {
             try
             {
-                // Read the item to see if it exists.  
-                ItemResponse<Platform> platformResponse = await _container.ReadItemAsync<Platform>(platform.Id, new PartitionKey(platform.Id));
+                ItemResponse<Platform> platformResponse = await _container.ReadItemAsync<Platform>(
+                    platform.Id.ToString(), 
+                    new PartitionKey(platform.Id.ToString()));
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                // Create an item in the container representing
-                ItemResponse<Platform> platformResponse = await _container.CreateItemAsync<Platform>(platform, new PartitionKey(platform.Id));
+                ItemResponse<Platform> platformResponse = await _container.CreateItemAsync(
+                    platform, 
+                    new PartitionKey(platform.Id.ToString()));
             }
         }
 
@@ -88,7 +84,9 @@ namespace PlatformService.Data
         {
             try
             {
-                await _container.ReplaceItemAsync(platform, platform.Id);
+                await _container.ReplaceItemAsync(
+                    platform, 
+                    platform.Id.ToString());
             }
             catch (CosmosException ex)
             {
@@ -103,7 +101,9 @@ namespace PlatformService.Data
         {
             try
             {
-                await _container.DeleteItemAsync<Platform>(platform.Id, new PartitionKey(platform.Id));
+                await _container.DeleteItemAsync<Platform>(
+                    platform.Id.ToString(), 
+                    new PartitionKey(platform.Id.ToString()));
             }
             catch (CosmosException ex)
             {

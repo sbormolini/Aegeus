@@ -1,18 +1,30 @@
+using Microsoft.Azure.Cosmos;
 using PlatformService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // add cosmos
-//var accountEndpoint = builder.Configuration.GetValue<string>("CosmosDb:Account");
-//var accountKey = builder.Configuration.GetValue<string>("CosmosDb:Key");
-//var dbName = builder.Configuration.GetValue<string>("CosmosDb:DatabaseName");
-//builder.Services.AddDbContext<AppDbContext>(x => x.UseCosmos(accountEndpoint, accountKey, dbName));
+var accountEndpoint = builder.Configuration.GetValue<string>("CosmosDB:AccountEndpoint");
+var databaseName = builder.Configuration.GetValue<string>("CosmosDB:DatabaseName");
+var containerNmae = builder.Configuration.GetValue<string>("CosmosDB:ContainerName");
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
+{
+    IHttpClientFactory httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+    CosmosClientOptions cosmosClientOptions = new()
+    {
+        HttpClientFactory = httpClientFactory.CreateClient,
+        ConnectionMode = ConnectionMode.Gateway
+    };
+
+    return new CosmosClient(accountEndpoint, cosmosClientOptions);
+});
+builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
 
 var app = builder.Build();
 
