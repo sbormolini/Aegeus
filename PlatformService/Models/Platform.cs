@@ -8,7 +8,7 @@ public class Platform
     [Key]
     [Required]
     [JsonProperty(PropertyName = "id")]
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     [Required]
     [JsonProperty(PropertyName = "name")]
